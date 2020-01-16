@@ -34,7 +34,7 @@ def get_table_titles(page:int) -> list():#pd.DataFrame:
     text_per_page = [x.text for x in pages[page].find_all('p')]
     for x in text_per_page:
         if x.lower().startswith('table'):
-            splt = re.split('\d+[\.?:?]\s+',x) #one period or none after the last digit followed by one or more whitespace
+            splt = re.split('\d+[\.:]?\s+',x) #one period or none after the last digit followed by one or more whitespace
             if len(splt) > 1:
                 if splt[1].count('.') < 3 and splt[1][0].isupper() and 'table of content' not in x.lower():
                     tbl_names.append(x.replace('\n',''))
@@ -79,7 +79,7 @@ for ind, page in enumerate (pages):
             
 files = ['A6F4Q3.pdf','A6F4Q4.pdf','A6F4Q5.pdf','A6F4Q6.pdf','A6F4Q7.pdf','A6F4Q8.pdf','A6F4Q9.pdf','A6F4R0.pdf','A6F4R1.pdf','A6F4R2.pdf']
 
-
+tables = camelot.read_pdf(z, pages = 'all', flag_size=True, copy_text=['v'], line_scale=40, f = 'excel')  #loop len(tables)
 
 
 
