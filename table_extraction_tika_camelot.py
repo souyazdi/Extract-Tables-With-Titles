@@ -56,8 +56,7 @@ for ind, page in enumerate (pages):
         continue
     title_lst = get_table_titles(pg_num)
     tb_num = tables.n
-    #print(tb_num)
-    #print(len(title_lst))
+
     print(title_lst)
     
     if tb_num == 0:
@@ -89,38 +88,70 @@ for ind, page in enumerate (pages):
             title_dict[pg_num] = chars
           
         elif len(title_lst) < tb_num :
-            #first case: if the first table in the page is conitnuos of what was on the previous page
-            df_tb = tables[0].df
-            df_tb = df_tb.replace('/na', '_', regex = True)
-            df_tb.columns = df_tb.iloc[0]
-            df_tb = df_tb.iloc[1:]
-            if (pg_num-1 in title_dict):
-                #find the list of tables on the previous page
-                lst_tbl = (title_dict.get(pg_num-1))[-1]
-                lst_tbl_df = lst_tbl[1]
-                #check if the columns of the last table on the previous page are the same as the table on this page
-                if len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0 or len(set(lst_tbl_df.columns))== len(set(df_tb.columns)):
-                    xl_name = lst_tbl[2]
-            
-                    chars.append([0,df_tb,xl_name])
-                    
-                    xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
-                    #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
-                    df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
-                        
-                else:
-                    xl_name = title_lst[0]
-                    xl_name = xl_name.replace('/','_')
-                    xl_name = xl_name.replace(':','')
-                       
-                    chars.append([0,df_tb,xl_name])
-                    xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
-                    #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
-                    df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
-                title_dict[pg_num] = chars
+            try:
+                #first case: if the first table in the page is conitnuos of what was on the previous page
+                df_tb = tables[0].df
+                df_tb = df_tb.replace('/na', '_', regex = True)
+                df_tb.columns = df_tb.iloc[0]
+                df_tb = df_tb.iloc[1:]
+                if (pg_num-1 in title_dict):
+                    #find the list of tables on the previous page
+                    lst_tbl = (title_dict.get(pg_num-1))[-1]
+                    lst_tbl_df = lst_tbl[1]
+                    #check if the columns of the last table on the previous page are the same as the table on this page
+                    if len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0 or len(set(lst_tbl_df.columns))== len(set(df_tb.columns)):
+                        xl_name = lst_tbl[2]
                 
-                if tb_num > 1:
-                    for j in range(1,len(title_lst)):
+                        chars.append([0,df_tb,xl_name])
+                        
+                        xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
+                        #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                        df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
+                            
+                    else:
+                        xl_name = title_lst[0]
+                        xl_name = xl_name.replace('/','_')
+                        xl_name = xl_name.replace(':','')
+                           
+                        chars.append([0,df_tb,xl_name])
+                        xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
+                        #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                        df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
+                    title_dict[pg_num] = chars
+                    
+                    if tb_num > 1:
+                        for j in range(1,len(title_lst)):
+                            df_tb = tables[j].df
+                            df_tb = df_tb.replace('/na', '_', regex = True)
+                            df_tb.columns = df_tb.iloc[0]
+                            df_tb = df_tb.iloc[1:]
+                            xl_name = title_lst[j]
+                            xl_name = xl_name.replace('/','_')
+                            xl_name = xl_name.replace(':','')
+                            #store page number, index of the table, and its name in a dictionary
+                            chars.append([j,df_tb,xl_name])
+                            
+                            xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
+                            #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                            df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
+                    
+                        for j in range(len(title_lst),tb_num):
+                            df_tb = tables[j].df
+                            df_tb = df_tb.replace('/na', '_', regex = True)
+                            df_tb.columns = df_tb.iloc[0]
+                            df_tb = df_tb.iloc[1:]
+                            xl_name = z.replace('\\','_')
+                            #store page number, index of the table, and its name in a dictionary
+                            chars.append([j,df_tb,xl_name])                        
+                            
+                            xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
+                            #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                            df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')                    
+                        title_dict[pg_num] = chars
+                    else:
+                        title_dict[pg_num] = chars
+                else:
+                    for j in range(0,len(title_lst)):
                         df_tb = tables[j].df
                         df_tb = df_tb.replace('/na', '_', regex = True)
                         df_tb.columns = df_tb.iloc[0]
@@ -140,18 +171,67 @@ for ind, page in enumerate (pages):
                         df_tb = df_tb.replace('/na', '_', regex = True)
                         df_tb.columns = df_tb.iloc[0]
                         df_tb = df_tb.iloc[1:]
-                        xl_name = z.replace('\\','_')
+                        xl_name = z.split('\\')[-1].replace('.pdf','')
                         #store page number, index of the table, and its name in a dictionary
                         chars.append([j,df_tb,xl_name])                        
                         
                         xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
                         #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
-                        df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')                    
+                        df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
                     title_dict[pg_num] = chars
-                else:
-                    title_dict[pg_num] = chars
-            else:
-                for j in range(0,len(title_lst)):
+            except:
+                print("Function failed on page {}".format(pg_num+1))
+                pass
+                    
+    
+
+
+
+##############PHASE 2##########################################################
+from datetime import datetime
+start_time = datetime.now()
+          
+files = ['3579528.pdf','3578647.pdf','3581069.pdf','3578648.pdf','3579739.pdf','3579849.pdf']
+os.chdir(r'H:\GitHub\Tbl_results')
+    
+
+for file in files:
+    file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(file)
+    
+    file_name = file_path.split('/')[-1].replace('.pdf','')
+        
+    data = parser.from_file(file_path,xmlContent=True)
+    #raw_xml = parser.from_file('A6T2V6.pdf', xmlContent=True)
+
+    #xml tag <div> splitting point for pages
+    soup = BeautifulSoup(data['content'], 'lxml')
+    pages = soup.find_all('div', attrs={'class': 'page'})
+
+    title_dict = dict()
+
+    for ind, page in enumerate (pages):
+        pg_num = ind
+        chars = []
+        try:
+            tables = camelot.read_pdf(file_path, pages = str(pg_num+1), flag_size=True, copy_text=['v'], line_scale=40, f = 'csv')  #loop len(tables)
+        except:
+            continue
+        title_lst = get_table_titles(pg_num)
+        tb_num = tables.n
+    
+        print(title_lst)
+        
+        if tb_num == 0:
+            print("No table on page "+ str(pg_num+1) + " is detected")
+            continue
+        
+        elif tb_num == 1 and (tables[0].parsing_report)['whitespace'] > 75.0:
+            print("Page {} contains an image".format((tables[0].parsing_report)['page'] ))  
+            continue
+        
+        else:
+            if len(title_lst) >= tb_num :
+                for j in range(0,tb_num):
                     df_tb = tables[j].df
                     df_tb = df_tb.replace('/na', '_', regex = True)
                     df_tb.columns = df_tb.iloc[0]
@@ -159,52 +239,118 @@ for ind, page in enumerate (pages):
                     xl_name = title_lst[j]
                     xl_name = xl_name.replace('/','_')
                     xl_name = xl_name.replace(':','')
+                    
                     #store page number, index of the table, and its name in a dictionary
                     chars.append([j,df_tb,xl_name])
                     
-                    xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
+                    xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.csv'
                     #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
-                    df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
-            
-                for j in range(len(title_lst),tb_num):
-                    df_tb = tables[j].df
+                    df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                
+                title_dict[pg_num] = chars
+              
+            elif len(title_lst) < tb_num :
+                try:
+                    #first case: if the first table in the page is conitnuos of what was on the previous page
+                    df_tb = tables[0].df
                     df_tb = df_tb.replace('/na', '_', regex = True)
                     df_tb.columns = df_tb.iloc[0]
                     df_tb = df_tb.iloc[1:]
-                    xl_name = z.replace('\\','_')
-                    #store page number, index of the table, and its name in a dictionary
-                    chars.append([j,df_tb,xl_name])                        
+                    if (pg_num-1 in title_dict):
+                        #find the list of tables on the previous page
+                        lst_tbl = (title_dict.get(pg_num-1))[-1]
+                        lst_tbl_df = lst_tbl[1]
+                        #check if the columns of the last table on the previous page are the same as the table on this page
+                        if len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0 or len(set(lst_tbl_df.columns))== len(set(df_tb.columns)):
+                            xl_name = lst_tbl[2]
                     
-                    xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.xlsx'
-                    #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
-                    df_tb.to_excel(xlsx_name, index = False, encoding='utf-8-sig')
-                title_dict[pg_num] = chars
+                            chars.append([0,df_tb,xl_name])
+                            
+                            xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.csv'
+                            #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                                
+                        else:
+                            xl_name = title_lst[0]
+                            xl_name = xl_name.replace('/','_')
+                            xl_name = xl_name.replace(':','')
+                               
+                            chars.append([0,df_tb,xl_name])
+                            xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.csv'
+                            #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                        title_dict[pg_num] = chars
+                        
+                        if tb_num > 1:
+                            for j in range(1,len(title_lst)):
+                                df_tb = tables[j].df
+                                df_tb = df_tb.replace('/na', '_', regex = True)
+                                df_tb.columns = df_tb.iloc[0]
+                                df_tb = df_tb.iloc[1:]
+                                xl_name = title_lst[j]
+                                xl_name = xl_name.replace('/','_')
+                                xl_name = xl_name.replace(':','')
+                                #store page number, index of the table, and its name in a dictionary
+                                chars.append([j,df_tb,xl_name])
+                                
+                                xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.csv'
+                                #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                                df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                        
+                            for j in range(len(title_lst),tb_num):
+                                df_tb = tables[j].df
+                                df_tb = df_tb.replace('/na', '_', regex = True)
+                                df_tb.columns = df_tb.iloc[0]
+                                df_tb = df_tb.iloc[1:]
+                                xl_name = z.replace('\\','_')
+                                #store page number, index of the table, and its name in a dictionary
+                                chars.append([j,df_tb,xl_name])                        
+                                
+                                xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.csv'
+                                #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                                df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')                    
+                            title_dict[pg_num] = chars
+                        else:
+                            title_dict[pg_num] = chars
+                    else:
+                        for j in range(0,len(title_lst)):
+                            df_tb = tables[j].df
+                            df_tb = df_tb.replace('/na', '_', regex = True)
+                            df_tb.columns = df_tb.iloc[0]
+                            df_tb = df_tb.iloc[1:]
+                            xl_name = title_lst[j]
+                            xl_name = xl_name.replace('/','_')
+                            xl_name = xl_name.replace(':','')
+                            #store page number, index of the table, and its name in a dictionary
+                            chars.append([j,df_tb,xl_name])
+                            
+                            xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.csv'
+                            #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
+                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                     
+                        for j in range(len(title_lst),tb_num):
+                            df_tb = tables[j].df
+                            df_tb = df_tb.replace('/na', '_', regex = True)
+                            df_tb.columns = df_tb.iloc[0]
+                            df_tb = df_tb.iloc[1:]
+                            
+                            xl_name = file_name
+                            #store page number, index of the table, and its name in a dictionary
+                            chars.append([j,df_tb,xl_name])                        
+                            
+                            xlsx_name = xl_name +'-'+str(pg_num+1)+'-'+str(j)+ '.csv'
+
+                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                        title_dict[pg_num] = chars
+                except:
+                    print("Function failed on page {}".format(pg_num+1))
+                    pass
+                
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))                        
     
-
-
-
-##############PHASE 2##########################################################
-            
-files = ['A6F4Q3.pdf','A6F4Q4.pdf','A6F4Q5.pdf','A6F4Q6.pdf','A6F4Q7.pdf','A6F4Q8.pdf','A6F4Q9.pdf','A6F4R0.pdf','A6F4R1.pdf','A6F4R2.pdf']
-
-tables = camelot.read_pdf(z, pages = '189', flag_size=True, copy_text=['v'], line_scale=40, f = 'excel')  #loop len(tables)
-tables.n
-rep = tables[0].parsing_report
-rep['whitespace']
-df_tb = tables[0].df
-df_tb = df_tb.replace('/na', '_', regex = True)
-df_tb.columns = df_tb.iloc[0]
-df_tb = df_tb.iloc[1:]
-
-for i in df_tb.columns:
-    print(i)
-tables.export('ffooo.csv')
-
-
-
-
-
+    
+    
 
 
 
