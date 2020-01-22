@@ -73,21 +73,21 @@ for file in files:
             continue
         
         elif tb_num == 1 and (tables[0].parsing_report)['whitespace'] > 69.0:
-            print("I'm hererererererer")
+
             print("Page {} contains an image".format((tables[0].parsing_report)['page'] ))  
             continue
         
         elif tb_num == 1:
-            print("table_1")
+
             df_tb = tables[0].df
             df_tb = df_tb.replace('/na', '_', regex = True)
             df_tb.columns = df_tb.iloc[0]
             df_tb = df_tb.iloc[1:]
             
             if len(title_lst) == 0:
-                print("table_2")
+
                 if (pg_num-1 in title_dict):
-                    print("table_3")
+
                     #find the list of tables on the previous page
                     lst_tbl = (title_dict.get(pg_num-1))[-1]
                     lst_tbl_df = lst_tbl[1]
@@ -103,7 +103,7 @@ for file in files:
                 
                    
                     if (len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0) or (len(set(lst_tbl_df.columns))== len(set(df_tb.columns))) or (ratio_similarity >= 85):
-                        print("table_4")
+
                         xl_name = lst_tbl[2]
                                                 
                         chars.append([0,df_tb,xl_name])
@@ -115,7 +115,7 @@ for file in files:
                         df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                             
                     else:
-                        print("table_5")
+
                         xl_name = file_name
                         chars.append([0,df_tb,xl_name])
                         xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
@@ -129,7 +129,7 @@ for file in files:
                     df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                     title_dict[pg_num] = chars
             else:
-                print("KKKKKKKKK")
+
                 xl_name = title_lst[0]
                 xl_name = xl_name.replace('/','_')
                 xl_name = xl_name.replace(':','')
