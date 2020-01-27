@@ -32,16 +32,13 @@ def get_table_titles(page:int) -> list():#pd.DataFrame:
 #start_time = datetime.now()
           
 #files = ['3579528.pdf','3578647.pdf','3581069.pdf','3578648.pdf','3579739.pdf','3579849.pdf']
-
 files = ['A6F4Q3.pdf']
 
 
 #file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(files[0])
 os.chdir(r'H:\GitHub\tmp\J')
-#tables = camelot.read_pdf(file_path, pages = 'all', flag_size=True, copy_text=['v'], f = 'csv')  #loop len(tables)
 
-    
-title_dict = dict()
+
 for file in files:
     file_path = 'F:/Environmental Baseline Data/Version 3/Data/PDF/{}'.format(file)
 #    file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(file)
@@ -62,7 +59,7 @@ for file in files:
         chars = []
         #camelot table objects for each page of the pdf
         try:
-            tables = camelot.read_pdf(file_path, pages = str(pg_num+1), flag_size=True, copy_text=['v'], f = 'csv')  #loop len(tables)
+            tables = camelot.read_pdf(file_path, pages = str(pg_num+1), flag_size=True, copy_text=['v'],strip_text = '\n',line_scale=40, f = 'csv')  #loop len(tables)
         except:
             continue
         #get table names in page == pg_num by parsing get_table_titles() function
@@ -85,20 +82,22 @@ for file in files:
         elif tb_num == 1:
             #this block distills the dataframe with proper column names
             df_tb = tables[0].df
-            colname = df_tb.iloc[0]
-            print(colname)
-            if (len(df_tb.columns) - sum(colname.isin([''])))  == 1:
-                if len(colname[0].split('\n')) == len(df_tb.columns):
-                    col_list = colname[0].split('\n')
-                    df_tb = df_tb.replace('/na', '_', regex = True)
-                    df_tb.columns = col_list
-                elif len(colname[0].split('\n')) > len(df_tb.columns):
-                    col_list = colname[0].split('\n')[0:len(df_tb.columns)]
-                    df_tb = df_tb.replace('/na', '_', regex = True)
-                    df_tb.columns = col_list
-            else:    
-                df_tb = df_tb.replace('/na', '_', regex = True)
-                df_tb.columns =colname
+            df_tb = df_tb.replace('/na', '_', regex = True)
+            colname = df_tb.iloc[0].str.replace('\n',' ',regex=True)
+            df_tb.columns = colname
+            ############################################################
+#            if (len(df_tb.columns) - sum(colname.isin([''])))  == 1:
+#                if len(colname[0].split('\n')) == len(df_tb.columns):
+#                    col_list = colname[0].split('\n')
+#                    df_tb = df_tb.replace('/na', '_', regex = True)
+#                    df_tb.columns = col_list
+#                elif len(colname[0].split('\n')) > len(df_tb.columns):
+#                    col_list = colname[0].split('\n')[0:len(df_tb.columns)]
+#                    df_tb = df_tb.replace('/na', '_', regex = True)
+#                    df_tb.columns = col_list
+#            else:    
+#                df_tb = df_tb.replace('/na', '_', regex = True)
+#                df_tb.columns =colname
             df_tb = df_tb[1:]   
             #df_tb = df_tb.iloc[1:]
             #in case no title is extracted from this page but we know that there is one table
@@ -116,9 +115,9 @@ for file in files:
                     col_concat_prev = list(lst_tbl_df.columns.values)
                     ccp = ''.join(col_concat_prev)
                     col_join_prev = (ccp.replace(' ','')).replace('\n','')  
-                    ratio_similarity = fuzz.token_set_ratio(col_join_curr, col_join_prev)
+                    ratio_similarity = fuzz.token_sort_ratio(col_join_curr, col_join_prev)
                     #check if the columns of the last table on the previous page are the same as the table on this page
-                    if (len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0) or (len(set(lst_tbl_df.columns))== len(set(df_tb.columns))) or (ratio_similarity >= 75):
+                    if (len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0) or (len(set(lst_tbl_df.columns))== len(set(df_tb.columns))) or (ratio_similarity > 89):
                         xl_name = lst_tbl[2]
                         chars.append([0,df_tb,xl_name])
                         xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
@@ -189,23 +188,16 @@ for file in files:
                         col_join_prev = (ccp.replace(' ','')).replace('\n','')  
                         ratio_similarity = fuzz.token_sort_ratio(ccc, ccp)
                 
-                
-                        if len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0 or len(set(lst_tbl_df.columns))== len(set(df_tb.columns)) or ratio_similarity >= 85:
-                            xl_name = lst_tbl[2]
-                                                    
-                            chars.append([0,df_tb,xl_name])
-                                                    
+                        if len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0 or len(set(lst_tbl_df.columns))== len(set(df_tb.columns)) or ratio_similarity > 89:
+                            xl_name = lst_tbl[2]                           
+                            chars.append([0,df_tb,xl_name])                         
                             xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
-                           
                             df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                                 
                         else:
-                            xl_name = file_name
-                               
+                            xl_name = file_name   
                             chars.append([0,df_tb,xl_name])
-    
                             xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
-    
                             df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                     else:
                         xl_name = file_name       
@@ -227,7 +219,8 @@ for file in files:
                         #store page number, index of the table, and its name in a dictionary
                         chars.append([j,df_tb,xl_name])
                         
-                        xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j+1)+ '.csv'
+                        xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                        #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
                         df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                 
                     for j in range(len(title_lst)+1,tb_num):
@@ -241,13 +234,16 @@ for file in files:
                         chars.append([j,df_tb,xl_name])                        
                         
                         xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                        #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
                         df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')                    
                     title_dict[pg_num] = chars
                 
                 except:
                     print("Function failed on page {}".format(pg_num+1))
                     pass
-                    
+                
+                
+                
 end_time = datetime.now()
 print('Duration: {}'.format(end_time - start_time))                        
     
