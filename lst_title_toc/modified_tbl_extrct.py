@@ -29,6 +29,7 @@ import textwrap
 import numpy as np
 import time
 import pandas as pd
+import json
 
 # In[ ]:
 #######################FUNCTIONS##################################################
@@ -170,26 +171,29 @@ def extract_tables(file:str(),df:pd.DataFrame) -> dict:
                             xl_name = lst_tbl[2]
                             chars.append([0,df_tb,xl_name])
                             if file_name == xl_name:
-                                xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                                xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)
                             else:
-                                xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
+                                xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)
+                            xlsx_name_csv = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
                             chars_final.append([0,xlsx_name])
-                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')     
+                            df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')     
                         else:
                             xl_name = file_name
                             chars.append([0,df_tb,xl_name])
-                            xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                            xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)
                             chars_final.append([0,xlsx_name])
-                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')     
+                            xlsx_name_csv = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                            df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')     
                         title_dict[pg_num] = chars
                         title_dict_final[file_name+'-'+str(pg_num)]=chars_final
 
                     else:
                         xl_name = file_name       
                         chars.append([0,df_tb,xl_name])
-                        xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                        xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)
                         chars_final.append([0,xlsx_name])
-                        df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                        xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                        df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')
                     
                         title_dict[pg_num] = chars
                         title_dict_final[file_name+'-'+str(pg_num)]=chars_final
@@ -197,9 +201,10 @@ def extract_tables(file:str(),df:pd.DataFrame) -> dict:
                     xl_name = title_lst[0]
                     #store page number, index of the table, and its name in a dictionary
                     chars.append([0,df_tb,xl_name])
-                    xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
+                    xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)
+                    xlsx_name_csv = file_name + '_'+str(pg_num+1)+'_'+str(1)+ '.csv'
                     chars_final.append([0,xlsx_name])
-                    df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                    df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')
                     title_dict[pg_num] = chars
                     title_dict_final[file_name+'-'+str(pg_num)]=chars_final
 
@@ -210,9 +215,10 @@ def extract_tables(file:str(),df:pd.DataFrame) -> dict:
                         xl_name = title_lst[j]
                         #store page number, index of the table, and its name in a dictionary
                         chars.append([j,df_tb,xl_name])
-                        xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                        xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)
+                        xlsx_name_csv = file_name + '_'+str(pg_num+1)+'_'+str(1)+ '.csv'
                         chars_final.append([j,xlsx_name])
-                        df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                        df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')
                     title_dict[pg_num] = chars
                     title_dict_final[file_name+'-'+str(pg_num)]=chars_final
 
@@ -237,24 +243,27 @@ def extract_tables(file:str(),df:pd.DataFrame) -> dict:
                                 xl_name = lst_tbl[2]                           
                                 chars.append([0,df_tb,xl_name]) 
                                 if file_name == xl_name:
-                                    xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                                    xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)
                                 else:
-                                    xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
+                                    xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)
                                 chars_final.append([0,xlsx_name])
-                                df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                                xlsx_name_csv = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                                df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')   
 
                             else:
                                 xl_name = file_name   
                                 chars.append([0,df_tb,xl_name])
-                                xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                                xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)
                                 chars_final.append([0,xlsx_name])
-                                df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                                xlsx_name_csv = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                                df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')
                         else:
                             xl_name = file_name       
                             chars.append([0,df_tb,xl_name])
-                            xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                            xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)
                             chars_final.append([0,xlsx_name])
-                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                            xlsx_name_csv = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+                            df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')
 
                         indx = 0
                         for j in range(1,len(title_lst)+1):
@@ -263,19 +272,19 @@ def extract_tables(file:str(),df:pd.DataFrame) -> dict:
                             indx = indx + 1
                             #store page number, index of the table, and its name in a dictionary
                             chars.append([j,df_tb,xl_name])
-
-                            xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                            xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)
                             chars_final.append([j,xlsx_name])
-
-                            df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                            xlsx_name_csv = file_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                            df_tb.to_csv(xlsx_name_csv, index = False, encoding='utf-8-sig')
 
                         for j in range(len(title_lst)+1,tb_num):
                             df_tb = d_df[j]
                             xl_name = file_name
                             #store page number, index of the table, and its name in a dictionary
                             chars.append([j,df_tb,xl_name])                        
-                            xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                            xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)
                             chars_final.append([j,xlsx_name])
+                            xlsx_name_csv = file_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
                             df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')                    
                         title_dict[pg_num] = chars
                         title_dict_final[file_name+'-'+str(pg_num)]=chars_final
@@ -308,7 +317,8 @@ tst = df[df['DataID_pdf'] == file].reset_index(drop = True)
 os.chdir(r'H:\img')
 dictionary = extract_tables(file, tst) 
 
-
+with open(file + "table-pages.txt", 'w+', encoding='utf-8') as output:
+    output.write(json.dumps(dictionary, indent=2))
 
 
 
