@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Mar  2 21:44:45 2020
+
+@author: T1Sousan
+"""
+
 
 from bs4 import BeautifulSoup
 import lxml
@@ -51,12 +58,10 @@ def extract_table(argument_list):
 
     try:
         data = parser.from_file(file_path,xmlContent=True)
-        #raw_xml = parser.from_file('A6T2V6.pdf', xmlContent=True)
         print(file_path)
         #xml tag <div> splitting point for pages
         soup = BeautifulSoup(data['content'], 'lxml')
         pages = soup.find_all('div', attrs={'class': 'page'})
-        print(pages)
         title_dict = dict()
         start_time = datetime.now()
         for ind, page in enumerate (pages):
@@ -90,7 +95,7 @@ def extract_table(argument_list):
 #                print("Page {} of file {} contains is detected as an alignmentsheet".format(str(pg_num+1),file_name))
 #                continue
             #***********
-            
+    
             #in case only one table is present on the page,
             elif tb_num == 1:
                 #this block distills the dataframe with proper column names
@@ -260,9 +265,12 @@ def extract_table(argument_list):
 
 
 ################SEQUENTIAL########################
-def extract_table_(file,df):   
+def extract_table_(file,df) -> pd.DataFrame:   
     #file = argument_list[0]
     #df = argument_list[1]
+    col_names =  ['file','page#','name']
+    my_df = pd.DataFrame(columns = col_names)
+    my_df.loc[:,'file'] = file
     
     failed_pdf = []
     start_time = datetime.now()
@@ -347,7 +355,8 @@ def extract_table_(file,df):
                         if (len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0) or (len(set(lst_tbl_df.columns))== len(set(df_tb.columns))) or (ratio_similarity > 89):
                             xl_name = lst_tbl[2]
                             chars.append([0,df_tb,xl_name])
-                            xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
+                            #xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
+                            xlsx_name = file_name +'_' + str(pg_num+1) + '_'+str(1) + '.csv'
                             df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')     
                         else:
                             xl_name = file_name
@@ -355,6 +364,8 @@ def extract_table_(file,df):
                             xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
                             df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                         title_dict[pg_num] = chars
+                        my_df.loc[:,'name'] = xlsx_name
+                        my_df.loc[:,'page#'] = pg_num
 
                     else:
                         xl_name = file_name       

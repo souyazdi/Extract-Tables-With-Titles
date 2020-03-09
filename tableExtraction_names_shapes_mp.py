@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Mar  2 21:33:48 2020
+
+@author: T1Sousan
+"""
+
 #!/usr/bin/env python
 # coding: utf-8
 
@@ -5,7 +12,7 @@ import pandas as pd
 import os
 import sys
 sys.path.insert(0, 'H:/GitHub/Extract-Tables-With-Titles')
-import functions_mp as mf
+import functions_names_shapes_mp as mf
 import multiprocessing
 import time
 import camelot
@@ -104,6 +111,7 @@ ngtl2021 = df[df['Application title short'] == hearing].reset_index(drop = True)
 os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\ngtl2021')
 files = list(ngtl2021['DataID_pdf'].unique())
 for file in files:
+    file = '2546082.pdf'
     file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(file)
     tables = camelot.read_pdf(file_path, pages = 'all', flag_size=True, copy_text=['v'],strip_text = '\n',line_scale=40, f = 'csv',flavour = 'stream')  #loop len(tables)
     tbls_dict[file] = tables.n

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan 16 11:13:58 2020
+Created on Thu Jan 23 13:56:56 2020
 
 @author: yazdsous
 """
@@ -32,73 +32,85 @@ def get_table_titles(page:int) -> list():#pd.DataFrame:
 #start_time = datetime.now()
           
 #files = ['3579528.pdf','3578647.pdf','3581069.pdf','3578648.pdf','3579739.pdf','3579849.pdf']
+
 files = ['A6F4Q3.pdf']
 
-
+file = 'A6F4Q3.pdf'
 #file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(files[0])
 os.chdir(r'H:\GitHub\tmp\J')
+#tables = camelot.read_pdf(file_path, pages = 'all', flag_size=True, copy_text=['v'], f = 'csv')  #loop len(tables)
 
-
+    
+#title_dict = dict()
 for file in files:
     file_path = 'F:/Environmental Baseline Data/Version 3/Data/PDF/{}'.format(file)
-#    file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(file)
-    
+    #file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(file)
+
+    #file name without the extention    
     file_name = file_path.split('/')[-1].replace('.pdf','')
         
+    #xml form of the pdf content
     data = parser.from_file(file_path,xmlContent=True)
-    #raw_xml = parser.from_file('A6T2V6.pdf', xmlContent=True)
-
+    
     #xml tag <div> splitting point for pages
     soup = BeautifulSoup(data['content'], 'lxml')
     pages = soup.find_all('div', attrs={'class': 'page'})
 
     title_dict = dict()
+    
     start_time = datetime.now()
     for ind, page in enumerate (pages):
+        ind = 18
         pg_num = ind
         chars = []
         #camelot table objects for each page of the pdf
         try:
-            tables = camelot.read_pdf(file_path, pages = str(pg_num+1), flag_size=True, copy_text=['v'],strip_text = '\n',line_scale=40, f = 'csv',flavour = 'stream')  #loop len(tables)
+            tables = camelot.read_pdf(file_path, pages = str(pg_num+1), flag_size=True, copy_text=['v'], f = 'csv')  #loop len(tables)
+
+            #tables = camelot.read_pdf(file_path, pages = str(pg_num+1), flag_size=True, copy_text=['v'], f = 'csv')  #loop len(tables)
         except:
-            continue
+            pass
+            #continue
         #get table names in page == pg_num by parsing get_table_titles() function
         title_lst = get_table_titles(pg_num)
         #get total number of table objects detected by Camelot in page == pg_num
         tb_num = tables.n
         
         #VIEW
-        print(title_lst)  
+        print(title_lst)
+        
         #if Camelot returns NO table on the page continue the loop and go to the next page
         if tb_num == 0:
             print("No table on page "+ str(pg_num+1) + " is detected")
-            continue
+            pass
+            #continue
         #if whitespace of the detected table is larger than 69% of the entire table and there is only
         #one table on that page, identify this as figure and continute the loop and go to the next page
         elif tb_num == 1 and (tables[0].parsing_report)['whitespace'] > 69.0:
             print("Page {} contains an image".format((tables[0].parsing_report)['page'] ))  
-            continue
+            pass
+            #continue
         #in case only one table is present on the page,
         elif tb_num == 1:
             #this block distills the dataframe with proper column names
             df_tb = tables[0].df
-            df_tb = df_tb.replace('/na', '_', regex = True)
-            colname = df_tb.iloc[0].str.replace('\n',' ',regex=True)
-            df_tb.columns = colname
-            ############################################################
-#            if (len(df_tb.columns) - sum(colname.isin([''])))  == 1:
-#                if len(colname[0].split('\n')) == len(df_tb.columns):
-#                    col_list = colname[0].split('\n')
-#                    df_tb = df_tb.replace('/na', '_', regex = True)
-#                    df_tb.columns = col_list
-#                elif len(colname[0].split('\n')) > len(df_tb.columns):
-#                    col_list = colname[0].split('\n')[0:len(df_tb.columns)]
-#                    df_tb = df_tb.replace('/na', '_', regex = True)
-#                    df_tb.columns = col_list
-#            else:    
-#                df_tb = df_tb.replace('/na', '_', regex = True)
-#                df_tb.columns =colname
-            df_tb = df_tb[1:]   
+            type(df_tb.columns.values)
+            colname = df_tb.iloc[0]
+            list(colname)
+            print(colname)
+            if (len(df_tb.columns) - sum(colname.isin([''])))  == 1:
+                if colname[0].split('\n') == len(df_tb.columns):
+                    col_list = colname[0].split('\n')
+                    df_tb = df_tb.replace('/na', '_', regex = True)
+                    df_tb.columns = col_list
+                elif colname[0].split('\n') == len(df_tb.columns) > len(df_tb.columns):
+                    l_list = colname[0].split('\n')[0:len(df_tb.columns)+1]
+                    df_tb = df_tb.replace('/na', '_', regex = True)
+                    df_tb.columns = col_list
+            else:    
+                df_tb = df_tb.replace('/na', '_', regex = True)
+                df_tb.columns =colname
+            df_tb = df_tb[1:]  
             #df_tb = df_tb.iloc[1:]
             #in case no title is extracted from this page but we know that there is one table
             if len(title_lst) == 0:
@@ -117,11 +129,12 @@ for file in files:
                     col_join_prev = (ccp.replace(' ','')).replace('\n','')  
                     ratio_similarity = fuzz.token_sort_ratio(col_join_curr, col_join_prev)
                     #check if the columns of the last table on the previous page are the same as the table on this page
-                    if (len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0) or (len(set(lst_tbl_df.columns))== len(set(df_tb.columns))) or (ratio_similarity > 89):
+                    if (len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0) or (len(set(lst_tbl_df.columns))== len(set(df_tb.columns))) or (ratio_similarity >= 85):
                         xl_name = lst_tbl[2]
                         chars.append([0,df_tb,xl_name])
                         xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
-                        df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')     
+                        df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                            
                     else:
                         xl_name = file_name
                         chars.append([0,df_tb,xl_name])
@@ -136,6 +149,7 @@ for file in files:
                     df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                     title_dict[pg_num] = chars
             else:
+
                 xl_name = title_lst[0]
                 xl_name = xl_name.replace('/','_')
                 xl_name = xl_name.replace(':','')
@@ -161,6 +175,7 @@ for file in files:
                     chars.append([j,df_tb,xl_name])
                     
                     xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                    #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
                     df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                 
                 title_dict[pg_num] = chars
@@ -188,22 +203,30 @@ for file in files:
                         col_join_prev = (ccp.replace(' ','')).replace('\n','')  
                         ratio_similarity = fuzz.token_sort_ratio(ccc, ccp)
                 
-                        if len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0 or len(set(lst_tbl_df.columns))== len(set(df_tb.columns)) or ratio_similarity > 89:
-                            xl_name = lst_tbl[2]                           
-                            chars.append([0,df_tb,xl_name])                         
+                
+                        if len((set(lst_tbl_df.columns)).difference(set(df_tb.columns))) == 0 or len(set(lst_tbl_df.columns))== len(set(df_tb.columns)) or ratio_similarity >= 85:
+                            xl_name = lst_tbl[2]
+                                                    
+                            chars.append([0,df_tb,xl_name])
+                                                    
                             xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(1)+ '.csv'
+                           
                             df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                                 
                         else:
-                            xl_name = file_name   
+                            xl_name = file_name
+                               
                             chars.append([0,df_tb,xl_name])
+    
                             xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
+    
                             df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                     else:
                         xl_name = file_name       
                         chars.append([0,df_tb,xl_name])
                         xlsx_name = file_name + '_' +str(pg_num+1)+'_'+str(1)+ '.csv'
                         df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
+                        title_dict[pg_num] = chars
 
                     indx = 0
                     for j in range(1,len(title_lst)+1):
@@ -219,7 +242,7 @@ for file in files:
                         #store page number, index of the table, and its name in a dictionary
                         chars.append([j,df_tb,xl_name])
                         
-                        xlsx_name = file_name + '_' + xl_name +'_'+str(pg_num+1)+'_'+str(j+1)+ '.csv'
+                        xlsx_name = file_name + '_' + xl_name +'-'+str(pg_num+1)+'-'+str(j+1)+ '.csv'
                         #xlsx_name = z.split('\\')[-1] + '-' + str(pg[i]+1) + str(j) + '.xlsx'
                         df_tb.to_csv(xlsx_name, index = False, encoding='utf-8-sig')
                 
@@ -241,9 +264,7 @@ for file in files:
                 except:
                     print("Function failed on page {}".format(pg_num+1))
                     pass
-                
-                
-                
+                    
 end_time = datetime.now()
 print('Duration: {}'.format(end_time - start_time))                        
     
