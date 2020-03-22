@@ -8,25 +8,10 @@ sys.path.insert(0, 'H:/GitHub/Extract-Tables-With-Titles')
 import functions_mp as mf
 import multiprocessing
 import time
-import camelot
-#
-def extract_tables(list_of_files, df_slice):
-    args = []
-    for pdf_file in list_of_files:
-        args.append([pdf_file, df_slice])
-    return args
-    
-#    result = []
-#    
-#    # Multiprocessing execution mode    
-#    with multiprocessing.Pool() as pool:
-#        result = pool.map(mp.extract_table, args)
-#    
-#    # Sequential execution mode:
-#    for arg in args:
-#        result.append(mf.extract_table(arg))
+import glob
+import random
 
-path = 'F:/Environmental Baseline Data/Version 4 - Final/Support files/Table titles raw data/final_table_titles4.csv'
+path = 'F:/Environmental Baseline Data/Version 4 - Final/Support files/Table titles raw data/final_table_titles5.csv'
 df = pd.read_csv(path, usecols = ['page_number','final_table_title', 'Application title short', 'DataID_pdf','categories', 'Category'])
 df = df[df['categories'] > 0] 
 df = df[df['Category'] == 'Table']
@@ -35,20 +20,21 @@ df.head()
 
 #######################If running multiprocessing    
 if __name__ == "__main__":
-    hearing = 'Application for 2021 NGTL System Expansion Project'
-    ngtl = df[df['Application title short'] == hearing].reset_index(drop = True)
-    ngtl.head()
+#    hearing = 'Application for 2021 NGTL System Expansion Project'
+#    ngtl = df[df['Application title short'] == hearing].reset_index(drop = True)
+#    ngtl.head()
     # Change this folder to the path were you want the tables saved
-    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\n2021')
+    os.chdir(r'H:\GitHub\tmp\tst')
     # Change the dataframe name accordingly
-    files = list(ngtl['DataID_pdf'].unique())
-    print(files)
-    a = extract_tables(files, ngtl)
+    #files = list(ngtl['DataID_pdf'].unique())
+    files = [os.path.basename(x) for x in glob.glob(r'F:\Environmental Baseline Data\Version 4 - Final\PDF\*.pdf')]
+    files = random.sample(files, 50)
+    a = mf.extract_tables(files, df)
     
     starttime = time.time()
     processes = []
     for i in a:
-        p = multiprocessing.Process(target= mf.extract_table, args=(i,))
+        p = multiprocessing.Process(target= mf.extract_tables_noname, args=(i,))
         processes.append(p)
         p.start()
         
@@ -56,59 +42,100 @@ if __name__ == "__main__":
         process.join()
        
     print('That took {} seconds'.format(time.time() - starttime))
-      
+    
+#################################################################################################################
+#    
+#if __name__ == "__main__":
+#    # Change this folder to the path were you want the tables saved
+#    subset_list_pdf_full = ['F:/Environmental Baseline Data/Version 4 - Final/PDF/' + x.split('\\')[-1] for x in glob.glob('F:/Environmental Baseline Data/Version 4 - Final/PDF/*.pdf')]
+#
+#    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV2\tst')
+#    # Change the dataframe name accordingly
+#    files = subset_list_pdf_full[0:50]
+#    a = mf.extract_tables(files, df)
+#    
+#    starttime = time.time()
+#    processes = []
+#    for i in a:
+#        p = multiprocessing.Process(target= mf.extract_table, args=(i,))
+#        processes.append(p)
+#        p.start()
+#        
+#    for process in processes:
+#        process.join()
+#       
+#    print('That took {} seconds'.format(time.time() - starttime))
+##################################################################################################################
+#      
+#if __name__ == '__main__':
+#    subset_list_pdf_full = ['F:/Environmental Baseline Data/Version 4 - Final/PDF/' + x.split('\\')[-1] for x in glob.glob('F:/Environmental Baseline Data/Version 4 - Final/PDF/*.pdf')]
+#
+#    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV2\tst')
+#    # Change the dataframe name accordingly
+#    files = subset_list_pdf_full[0:50]
+#    a = mf.extract_tables(files, df)
+#    
+#    starttime = time.time()
+#    pool = multiprocessing.Pool(18)
+#    pool.map(mf.extract_table, a)
+#    pool.close()
+#    print('That took {} seconds'.format(time.time() - starttime))      
+#    
+#    
+##################################################################################################################    
+#    
 #    
 #if __name__ == '__main__':
-##    hearing = 'Application for the Brunswick Pipeline Project'
-##    brunswick = df[df['Application title short'] == hearing].reset_index(drop = True)
-##    brunswick.head()
-##    # Change this folder to the path were you want the tables saved
-##    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\brunswick')
-##    # Change the dataframe name accordingly
-##    files = list(brunswick['DataID_pdf'].unique())
-##    print(files)
-##    
-##    a = extract_tables(files, brunswick)
-##    starttime = time.time()
-##    pool = multiprocessing.Pool()
-##    pool.map(mf.extract_table, a)
-##    pool.close()
-##    print('That took {} seconds'.format(time.time() - starttime))  
+#    hearing = 'Application for the Brunswick Pipeline Project'
+#    brunswick = df[df['Application title short'] == hearing].reset_index(drop = True)
+#    brunswick.head()
+#    # Change this folder to the path were you want the tables saved
+#    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\brunswick_')
+#    # Change the dataframe name accordingly
+#    files = list(brunswick['DataID_pdf'].unique())
+#    print(files)
 #    
-#    hearing = 'Application for the Edmonton to Hardisty Pipeline Project'
-#    edmonton_hardisty = df[df['Application title short'] == hearing].reset_index(drop = True)
-#    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\edmonton_hardisty')
-#    files = list(edmonton_hardisty['DataID_pdf'].unique())
-#    
-#    a = extract_tables(files, edmonton_hardisty)
-#    print(a)
+#    a = mf.extract_tables(files, brunswick)
 #    starttime = time.time()
 #    pool = multiprocessing.Pool()
 #    pool.map(mf.extract_table, a)
 #    pool.close()
 #    print('That took {} seconds'.format(time.time() - starttime))  
-#    
-     
+##    
+##    hearing = 'Application for the Edmonton to Hardisty Pipeline Project'
+##    edmonton_hardisty = df[df['Application title short'] == hearing].reset_index(drop = True)
+##    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\edmonton_hardisty')
+##    files = list(edmonton_hardisty['DataID_pdf'].unique())
+##    
+##    a = extract_tables(files, edmonton_hardisty)
+##    print(a)
+##    starttime = time.time()
+##    pool = multiprocessing.Pool()
+##    pool.map(mf.extract_table, a)
+##    pool.close()
+##    print('That took {} seconds'.format(time.time() - starttime))  
+##    
+#     
 ########################If running sequential
-hearing = 'Application for 2021 NGTL System Expansion Project' 
-ngtl2021 = df[df['Application title short'] == hearing].reset_index(drop = True)
-os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\ngtl2021')
-files = list(ngtl2021['DataID_pdf'].unique())
-for file in files:
-    mf.extract_table_(file,ngtl2021)     
-    
-    
-tbls_dict = dict()
-hearing = 'Application for 2021 NGTL System Expansion Project' 
-ngtl2021 = df[df['Application title short'] == hearing].reset_index(drop = True)
-os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\ngtl2021')
-files = list(ngtl2021['DataID_pdf'].unique())
-for file in files:
-    file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(file)
-    tables = camelot.read_pdf(file_path, pages = 'all', flag_size=True, copy_text=['v'],strip_text = '\n',line_scale=40, f = 'csv',flavour = 'stream')  #loop len(tables)
-    tbls_dict[file] = tables.n
-    
-    
+#hearing = 'Application for 2021 NGTL System Expansion Project' 
+#ngtl2021 = df[df['Application title short'] == hearing].reset_index(drop = True)
+#os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\ngtl2021')
+#files = list(ngtl2021['DataID_pdf'].unique())
+#for file in files:
+#    mf.extract_table_(file,ngtl2021)     
+#    
+#    
+#tbls_dict = dict()
+#hearing = 'Application for 2021 NGTL System Expansion Project' 
+#ngtl2021 = df[df['Application title short'] == hearing].reset_index(drop = True)
+#os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\ngtl2021')
+#files = list(ngtl2021['DataID_pdf'].unique())
+#for file in files:
+#    file_path = 'F:/Environmental Baseline Data/Version 4 - Final/PDF/{}'.format(file)
+#    tables = camelot.read_pdf(file_path, pages = 'all', flag_size=True, copy_text=['v'],strip_text = '\n',line_scale=40, f = 'csv',flavour = 'stream')  #loop len(tables)
+#    tbls_dict[file] = tables.n
+#    
+#    
     
 #hearing = 'Application for 2021 NGTL System Expansion Project' 
 #ngtl2021 = df[df['Application title short'] == hearing].reset_index(drop = True)
@@ -133,13 +160,13 @@ for file in files:
 #os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\edmonton_hardisty')
 #files = list(edmonton_hardisty['DataID_pdf'].unique())
 #extract_tables(file, edmonton_hardisty)
-#
+##
 #hearing = 'Application for Line 9 Reversal Phase I Project'
 #line9 = df[df['Application title short'] == hearing].reset_index(drop = True)
 #os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\line9')
 #files = list(line9['DataID_pdf'].unique())
 #extract_tables(file, line9)
-#
+##
 #hearing = 'Application for the Leismer to Kettle River Crossover'
 #leismer2kettle = df[df['Application title short'] == hearing].reset_index(drop = True)
 #os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\leismer2kettle')
@@ -160,7 +187,7 @@ for file in files:
 #
 #hearing = 'Application for the Horn River Project'
 #horn_river = df[df['Application title short'] == hearing].reset_index(drop = True)
-#os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\horn_river')
+#os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV2\horn_river')
 #files = list(horn_river['DataID_pdf'].unique())
 #extract_tables(file, horn_river)
 #
@@ -186,8 +213,8 @@ for file in files:
 #line4 = df[df['Application title short'] == hearing].reset_index(drop = True)
 #os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\line4')
 #files = list(line4['DataID_pdf'].unique())
-#extract_tables(file, line4) 
-#
+##extract_tables(file, line4) 
+##
 #hearing = 'Application for the Cushing Expansion'
 #cushing_expansion = df[df['Application title short'] == hearing].reset_index(drop = True)
 #os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\cushing_expansion')
@@ -223,12 +250,13 @@ for file in files:
 #os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\southern_lights')
 #files = list(southern_lights['DataID_pdf'].unique())
 #extract_tables(file, southern_lights) 
-#
+##
 #hearing = 'Application for the Brunswick Pipeline Project'
 #brunswick = df[df['Application title short'] == hearing].reset_index(drop = True)
-#os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV\brunswick')
+#os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV - Copy\brunswick_')
 #files = list(brunswick['DataID_pdf'].unique())
-#extract_tables(file, brunswick) 
+#for file in files:
+#    mf.extract_table_(file, brunswick) 
 #
 #hearing = 'Application for the Construction of North Corridor Expansion Project'
 #north_corridor = df[df['Application title short'] == hearing].reset_index(drop = True)
