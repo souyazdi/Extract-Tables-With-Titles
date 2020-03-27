@@ -10,13 +10,23 @@ import multiprocessing
 import time
 import glob
 import random
+from multiprocessing import Semaphore
+import numpy as np
 
-path = 'F:/Environmental Baseline Data/Version 4 - Final/Support files/Table titles raw data/final_table_titles5.csv'
-df = pd.read_csv(path, usecols = ['page_number','final_table_title', 'Application title short', 'DataID_pdf','categories', 'Category'])
+path1 = '//luxor/data/branch/Environmental Baseline Data/Version 4 - Final/Support files/Table titles raw data/final_table_titles8.csv'
+path2 = '//luxor/data/branch/Environmental Baseline Data/Version 4 - Final/Support files/Table titles raw data/mackenzie_table_title.csv'
+#df = pd.read_csv(path, usecols = ['page_number','final_table_title', 'Application title short', 'DataID_pdf','categories', 'Category'])
+df1 = pd.read_csv(path1, usecols = ['page_number','final_table_title', 'DataID','categories', 'Category'])
+df2 = pd.read_csv(path2, 'utf-8', engine = 'python',delimiter = ',')
+df2 = df2[['page_number','final_table_title', 'DataID','categories', 'Category']]
+frames = [df1,df2]
+df = pd.concat(frames)
+df['DataID'] = df['DataID'].astype(str)
 df = df[df['categories'] > 0] 
 df = df[df['Category'] == 'Table']
 df['final_table_title'] = df['final_table_title'].str.title()
 df.head()
+
 
 #######################If running multiprocessing    
 if __name__ == "__main__":
@@ -24,13 +34,11 @@ if __name__ == "__main__":
 #    ngtl = df[df['Application title short'] == hearing].reset_index(drop = True)
 #    ngtl.head()
     # Change this folder to the path were you want the tables saved
-    os.chdir(r'H:\GitHub\tmp\tst')
+    os.chdir(r'H:\GitHub\tmp\mp_tbl_mp')
     # Change the dataframe name accordingly
     #files = list(ngtl['DataID_pdf'].unique())
-    files = [os.path.basename(x) for x in glob.glob(r'F:\Environmental Baseline Data\Version 4 - Final\PDF\*.pdf')]
-    files = random.sample(files, 50)
+    #files = [os.path.basename(x) for x in glob.glob(r'F:\Environmental Baseline Data\Version 4 - Final\PDF\*.pdf')]
     a = mf.extract_tables(files, df)
-    
     starttime = time.time()
     processes = []
     for i in a:
@@ -42,9 +50,8 @@ if __name__ == "__main__":
         process.join()
        
     print('That took {} seconds'.format(time.time() - starttime))
-    
-#################################################################################################################
-#    
+#################################################################################    
+
 #if __name__ == "__main__":
 #    # Change this folder to the path were you want the tables saved
 #    subset_list_pdf_full = ['F:/Environmental Baseline Data/Version 4 - Final/PDF/' + x.split('\\')[-1] for x in glob.glob('F:/Environmental Baseline Data/Version 4 - Final/PDF/*.pdf')]
@@ -65,26 +72,33 @@ if __name__ == "__main__":
 #        process.join()
 #       
 #    print('That took {} seconds'.format(time.time() - starttime))
-##################################################################################################################
-#      
-#if __name__ == '__main__':
-#    subset_list_pdf_full = ['F:/Environmental Baseline Data/Version 4 - Final/PDF/' + x.split('\\')[-1] for x in glob.glob('F:/Environmental Baseline Data/Version 4 - Final/PDF/*.pdf')]
-#
-#    os.chdir(r'F:\Environmental Baseline Data\Version 4 - Final\CSV2\tst')
-#    # Change the dataframe name accordingly
-#    files = subset_list_pdf_full[0:50]
-#    a = mf.extract_tables(files, df)
-#    
-#    starttime = time.time()
-#    pool = multiprocessing.Pool(18)
-#    pool.map(mf.extract_table, a)
-#    pool.close()
-#    print('That took {} seconds'.format(time.time() - starttime))      
-#    
-#    
-##################################################################################################################    
-#    
-#    
+##################################################################################################################      
+if __name__ == '__main__':
+    #files = [os.path.basename(x) for x in glob.glob(r'F:\Environmental Baseline Data\Version 4 - Final\PDF\*.pdf')]
+    path = '//luxor/data/branch/Environmental Baseline Data/Version 4 - Final/CSV_final_JSON/'
+    path_ = '//luxor/data/branch/Environmental Baseline Data/Version 4 - Final/PDF/'
+    lst_json = [(fname.split('\\')[-1]).split('_')[0] for fname in glob.glob(path+'*.txt')]
+    lst_pdf = [(fname.split('\\')[-1]).replace('.pdf','') for fname in glob.glob(path_+'*.pdf')]
+    files = [item+'.pdf' for item in lst_pdf if item not in lst_json]        
+        
+    args = mf.create_arguments(files, df) 
+    starttime = time.time()
+    outputs = []
+#       
+#    #******************************************************
+#    for arg in args:
+#        outputs.append(mf.extract_tables_noname(arg))
+
+#    #******************************************************
+    with multiprocessing.Pool() as pool:
+        outputs = pool.map(mf.extract_tables_noname, args)
+    
+    print('That took {} seconds'.format(time.time() - starttime))      
+
+
+#learn starmap for multiprocessing     
+#################################################################################    
+    
 #if __name__ == '__main__':
 #    hearing = 'Application for the Brunswick Pipeline Project'
 #    brunswick = df[df['Application title short'] == hearing].reset_index(drop = True)
