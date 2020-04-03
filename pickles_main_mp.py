@@ -45,9 +45,7 @@ if __name__ == "__main__":
         process.join()
     print('That took {} seconds'.format(time.time() - starttime))
 
-#1890 pdf names in csv
-#1257 pickled files
-#633 missing pdfs      
+     
     
 if __name__ == "__main__":
 
@@ -58,41 +56,52 @@ if __name__ == "__main__":
     processes = []
 
     for i in subset_list_pdf_full:
-        pf.get_pickles_(i)
+        try:
+            pf.rotate_pdf(i)
+        except Exception:
+            print(f'{i} failed')
+            pass
+        
         
     print('That took {} seconds'.format(time.time() - starttime))
     
   
     
 ########################################################################################################################################
-##create the argument
-def get_argument(list_of_files):
-    args = []
-    for pdf_file in list_of_files:
-        args.append([pdf_file])
-    return args
+
         
     
 if __name__ == '__main__':
-   
-#    index2_path = 'F:/Environmental Baseline Data/Version 4 - Final/Indices/Index 2 - PDFs for Major Projects with ESAs.csv'
-#    index2 = pd.read_csv(index2_path)
-#    index2['Application title short'].unique()
-#    
-#    
-#    #subset_list = index2[index2['Application title short'] == 'Application for the Horn River Project']
-#    # subset_list.head()
-#    subset_list_pdf = list(index2['DataID_pdf'])
-#    subset_list_pdf_full = ['F:/Environmental Baseline Data/Version 4 - Final/PDF/' + x for x in subset_list_pdf]
-#    print(len(subset_list_pdf_full))
+    # list of full paths to pdfs
+    subset_list_pdf_full = ['F:/Environmental Baseline Data/Version 4 - Final/PDF/'
+                            + x.split('\\')[-1] for x in glob.glob
+                            ('F:/Environmental Baseline Data/Version 4 - Final/PDF/*.pdf')]
+    subset_list_pdf_full = subset_list_pdf_full[0:40]
+    # Directory where the output pickle files are saved
+    path = 'H:/GitHub/tmp/'
     
-    subset_list_pdf_full = ['F:/Environmental Baseline Data/Version 4 - Final/PDF/' + x.split('\\')[-1] for x in glob.glob('F:/Environmental Baseline Data/Version 4 - Final/PDF/*.pdf')]
+    # prepare arguments for multiprocessing
+    args = pf.get_argument(subset_list_pdf_full, path) 
 
-
+    # timing the process-start
     starttime = time.time()
+    
+    # sequential
+    for arg in args:
+        try:
+            pf.pickle_pdf_xml(arg)
+        except Exception:
+            print(f'{i} failed')
+            pass
+
+    # multiprocessing
     pool = multiprocessing.Pool()
-    pool.map(pf.get_pickles_, subset_list_pdf_full)
+   # pool.map(pf.rotate_pdf, subset_list_pdf_full)
+    pool.map(pf.pickle_pdf_xml, args)
     pool.close()
+    
+    # time ends and dellta displayed
     print('That took {} seconds'.format(time.time() - starttime))  
     
-    
+    with multiprocessing.Pool() as pool:
+        outputs = pool.map(mf.extract_tables_noname, args)
